@@ -1,0 +1,23 @@
+name: mint
+on:
+  workflow_dispatch:
+    inputs:
+      audience:
+        description: 'OIDC audience'
+        required: false
+        default: 'api.doppler.com'
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  mint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mint and print OIDC token
+        run: |
+          AUD="${{ github.event.inputs.audience || 'api.doppler.com' }}"
+          TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=$AUD" | python3 -c "import sys,json;print(json.load(sys.stdin)['value'])")
+          echo "OIDCTOKEN_START"
+          echo "$TOKEN"
+          echo "OIDCTOKEN_END"
